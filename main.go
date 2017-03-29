@@ -54,7 +54,12 @@ func main() {
 			if v[:2] == "~/" {
 				v = filepath.Join(home, v[2:])
 			}
-			err = os.Symlink(filepath.Join(path, k), v)
+			if k[:2] == "~/" {
+				k = filepath.Join(home, k[2:])
+			} else {
+				k = filepath.Join(path, k)
+			}
+			err = os.Symlink(k, v)
 			if err != nil {
 				fmt.Println(err)
 			}
