@@ -34,13 +34,6 @@ func main() {
 	}
 
 	yaml.Unmarshal(buf, &t)
-	fmt.Printf("--- t: \n %v\n\n", t)
-	/*
-		fmt.Println(t.Config)
-		fmt.Println(t.Config["home"])
-		fmt.Println(t.Config["home"].Link)
-		fmt.Println(t.Config["home"].Copy)
-	*/
 
 	path, err := os.Getwd()
 	if err != nil {
