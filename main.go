@@ -60,8 +60,10 @@ func main() {
 				k = filepath.Join(path, k)
 			}
 			if *force {
+				fmt.Println("Removing:", v)
 				err = os.Remove(v)
 			}
+			fmt.Println("Symlinking", v, "to", k)
 			err = os.Symlink(k, v)
 			if err != nil {
 				fmt.Println(err)
