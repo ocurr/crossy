@@ -24,6 +24,7 @@ func main() {
 	var t T
 
 	configName := flag.String("config", "config.yaml", "the name of the config file")
+	force := flag.Bool("force", false, "should the action specified be forced")
 
 	flag.Parse()
 
@@ -40,7 +41,6 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("\n\nWorking Directory: %s\n\n", path)
 
 	usr, err := user.Current()
 	if err != nil {
@@ -58,6 +58,9 @@ func main() {
 				k = filepath.Join(home, k[2:])
 			} else {
 				k = filepath.Join(path, k)
+			}
+			if *force {
+				err = os.Remove(v)
 			}
 			err = os.Symlink(k, v)
 			if err != nil {
