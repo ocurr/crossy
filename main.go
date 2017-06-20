@@ -25,6 +25,7 @@ func main() {
 
 	configName := flag.String("config", "config.yaml", "the name of the config file")
 	force := flag.Bool("force", false, "should the action specified be forced")
+	del := flag.Bool("delete", false, "deletes any generated symlinks or copies")
 
 	flag.Parse()
 
@@ -59,14 +60,16 @@ func main() {
 			} else {
 				k = filepath.Join(path, k)
 			}
-			if *force {
+			if *force || *del {
 				fmt.Println("Removing:", v)
 				err = os.Remove(v)
 			}
-			fmt.Println("Symlinking", v, "to", k)
-			err = os.Symlink(k, v)
-			if err != nil {
-				fmt.Println(err)
+			if !(*del) {
+				fmt.Println("Symlinking", v, "to", k)
+				err = os.Symlink(k, v)
+				if err != nil {
+					fmt.Println(err)
+				}
 			}
 		}
 	}
