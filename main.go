@@ -24,10 +24,13 @@ func main() {
 	var t T
 
 	configName := flag.String("config", "config.yaml", "the name of the config file")
+	pro := flag.String("profile", "default", "the profile, specified in the config, to be used for the procedure")
 	force := flag.Bool("force", false, "should the action specified be forced")
-	del := flag.Bool("delete", false, "deletes any generated symlinks or copies")
+	del := flag.Bool("delete", false, "deletes any generated symlinks or copies specified in the config file")
 
 	flag.Parse()
+
+	fmt.Println("Procedure: ", *pro)
 
 	buf, err := ioutil.ReadFile(*configName)
 	if err != nil {
@@ -50,8 +53,19 @@ func main() {
 	}
 	home := usr.HomeDir
 
-	for i := 0; i < len(t.Config["home"].Link); i++ {
-		for k, v := range t.Config["home"].Link[i] {
+	if len(t.Config[*pro].Link) == 0 && len(t.Config[*pro].Copy) == 0 {
+		fmt.Printf("Error: specified profile (%s) is not included in config file\n", *pro)
+		if len(t.Config) > 0 {
+			fmt.Printf("Please choose from:\n")
+			for k, _ := range t.Config {
+				fmt.Printf("\t%s\n", k)
+			}
+
+		}
+	}
+
+	for i := 0; i < len(t.Config[*pro].Link); i++ {
+		for k, v := range t.Config[*pro].Link[i] {
 			if v[:2] == "~/" {
 				v = filepath.Join(home, v[2:])
 			}
