@@ -30,7 +30,7 @@ func main() {
 
 	flag.Parse()
 
-	fmt.Println("Procedure: ", *pro)
+	fmt.Println("Using profile: ", *pro)
 
 	buf, err := ioutil.ReadFile(*configName)
 	if err != nil {
