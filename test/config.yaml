@@ -1,0 +1,14 @@
+config:
+
+    home:
+
+        link:
+            - "vimrc" : "dir/vimrc"
+            - "gitrc" : "dir/gitrc"
+
+        copy:
+            - "init.lua" : "dir/init.lua"
+    work:
+
+        link:
+            - "vimrc" : "dir/double/vimrc"
