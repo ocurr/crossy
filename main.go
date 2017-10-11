@@ -71,9 +71,6 @@ func main() {
 	pwd := getCWD()
 	home := getHomeDir()
 
-	fmt.Println(t.Profiles[*pro])
-	fmt.Println(t.Profiles[*pro][0]["vimrc"].Before)
-
 	for i := 0; i < len(t.Profiles[*pro]); i++ {
 		for k, v := range t.Profiles[*pro][i] {
 			v.Link = filterHomeDir(v.Link, home)
