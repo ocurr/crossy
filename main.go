@@ -3,25 +3,47 @@ package main
 import (
 	"flag"
 	"fmt"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"os"
 	"os/user"
-	"path/filepath"
+	"strings"
 )
 
-type Loc struct {
-	Link []map[string]string `yaml:",omitempty,flow"`
-	Copy []map[string]string `yaml:",omitempty,flow"`
+func getCWD() string {
+	path, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return path
 }
 
-type T struct {
-	Config map[string]Loc `yaml:",flow"`
+func getHomeDir() string {
+	usr, err := user.Current()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return usr.HomeDir
+}
+
+func filterHomeDir(path, homeDir string) string {
+	return strings.Replace(path, "~", homeDir, -1)
+}
+
+func addCWD(path, cwd string) (string, bool) {
+	if strings.Contains(path, "~/") {
+		return path, true
+	}
+
+	return cwd + "/" + path, false
+}
+
+func executeScript(script string) {
 }
 
 func main() {
 
-	var t T
+	var t Config
 
 	configName := flag.String("config", "config.yaml", "the name of the config file")
 	pro := flag.String("profile", "default", "the profile, specified in the config, to be used for the procedure")
@@ -32,70 +54,51 @@ func main() {
 
 	fmt.Println("Using profile: ", *pro)
 
-	buf, err := ioutil.ReadFile(*configName)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	NewConfig(*configName, &t)
 
-	yaml.Unmarshal(buf, &t)
-
-	path, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	usr, err := user.Current()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	home := usr.HomeDir
-
-	if len(t.Config[*pro].Link) == 0 && len(t.Config[*pro].Copy) == 0 {
+	if len(t.Profiles[*pro]) == 0 {
 		fmt.Printf("Error: specified profile (%s) is not included in config file\n", *pro)
-		if len(t.Config) > 0 {
+		if len(t.Profiles) > 0 {
 			fmt.Printf("Please choose from:\n")
-			for k, _ := range t.Config {
+			for k, _ := range t.Profiles {
 				fmt.Printf("\t%s\n", k)
 			}
-
+			fmt.Println("e.g. crossy -profile home")
 		}
+		return
 	}
 
-	for i := 0; i < len(t.Config[*pro].Link); i++ {
-		for k, v := range t.Config[*pro].Link[i] {
-			if v[:2] == "~/" {
-				v = filepath.Join(home, v[2:])
+	pwd := getCWD()
+	home := getHomeDir()
+
+	fmt.Println(t.Profiles[*pro])
+	fmt.Println(t.Profiles[*pro][0]["vimrc"].Before)
+
+	for i := 0; i < len(t.Profiles[*pro]); i++ {
+		for k, v := range t.Profiles[*pro][i] {
+			v.Link = filterHomeDir(v.Link, home)
+			k, needHome := addCWD(k, pwd)
+			if needHome {
+				filterHomeDir(k, home)
 			}
-			if k[:2] == "~/" {
-				k = filepath.Join(home, k[2:])
-			} else {
-				k = filepath.Join(path, k)
-			}
+
+			executeScript(v.Before)
+
 			if *force || *del {
-				fmt.Println("Removing:", v)
-				err = os.Remove(v)
-			}
-			if !(*del) {
-				fmt.Println("Symlinking", v, "to", k)
-				err = os.Symlink(k, v)
+				fmt.Println("Removing:", v.Link)
+				err := os.Remove(v.Link)
 				if err != nil {
 					fmt.Println(err)
 				}
 			}
-		}
-	}
-
-	/*
-		for i := 0; i < len(t.Config["home"].Copy); i++ {
-			for k, v := range t.Config["home"].Copy[i] {
-					err = os.Symlink(k, v)
-					if err != nil {
-						fmt.Println(err)
-					}
+			if !(*del) {
+				fmt.Println("Symlinking", v.Link, "to", k)
+				err := os.Symlink(k, v.Link)
+				if err != nil {
+					fmt.Println(err)
+				}
+				executeScript(v.After)
 			}
 		}
-	*/
+	}
 }

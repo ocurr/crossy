@@ -1,14 +1,9 @@
-config:
-
+profiles:
     home:
-
-        link:
-            - "vimrc" : "dir/vimrc"
-            - "gitrc" : "dir/gitrc"
-
-        copy:
-            - "init.lua" : "dir/init.lua"
+        - "vimrc" :
+            link : "dir/vimrc"
+            after : "cat dir/vimrc"
+        - "gitrc" :
+            link : "dir/gitrc"
+            after : "cat dir/gitrc"
     work:
-
-        link:
-            - "vimrc" : "dir/double/vimrc"

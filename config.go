@@ -1,35 +1,28 @@
 package main
 
 import (
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"os"
 )
 
 type Config struct {
-	Profiles map[string]profile `yaml:",flow"`
-}
-
-type profile struct {
-	Link []map[string]options `yaml:",omitempty,flow"`
+	Profiles map[string][]map[string]options `yaml:",flow"`
 }
 
 type options struct {
+	Link   string `yaml:",omitempty,flow"`
 	Before string `yaml:",omitempty,flow"`
 	After  string `yaml:",omitempty,flow"`
 }
 
-func NewConfig(fileName string) (*Config, error) {
-
-	var c Config
+func NewConfig(fileName string, c *Config) (*Config, error) {
 
 	buf, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
 
-	yaml.Unmarshal(buf, &c)
+	yaml.Unmarshal(buf, c)
 
-	return &c, nil
+	return c, nil
 }
