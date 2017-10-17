@@ -1,9 +1,11 @@
 profiles:
+    default:
+        - "nvim" :
+            link : "dir/vim"
     home:
         - "vimrc" :
             link : "dir/vimrc"
-            after : "cat dir/vimrc"
+            after : "script.sh"
         - "gitrc" :
             link : "dir/gitrc"
-            after : "cat dir/gitrc"
     work:

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"os/user"
 	"strings"
 )
@@ -38,7 +39,20 @@ func addCWD(path, cwd string) (string, bool) {
 	return cwd + "/" + path, false
 }
 
-func executeScript(script string) {
+func executeScript(name string) {
+	if len(name) == 0 {
+		return
+	}
+
+	tokens := strings.Split(name, " ")
+
+	out, err := exec.Command("/bin/bash", tokens...).Output()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("%s", string(out))
 }
 
 func main() {
@@ -86,6 +100,8 @@ func main() {
 				err := os.Remove(v.Link)
 				if err != nil {
 					fmt.Println(err)
+					fmt.Println("Encountered error, skipping to next item")
+					continue
 				}
 			}
 			if !(*del) {
@@ -93,6 +109,7 @@ func main() {
 				err := os.Symlink(k, v.Link)
 				if err != nil {
 					fmt.Println(err)
+					continue
 				}
 				executeScript(v.After)
 			}
